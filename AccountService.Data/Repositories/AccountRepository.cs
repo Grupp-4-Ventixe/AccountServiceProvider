@@ -15,7 +15,7 @@ public class AccountRepository : BaseRepository<AccountEntity>, IAccountReposito
     public async Task<AccountEntity?> GetUserByIdAsync(string userId)
     {
         return await _context.AccountEntities
-            .Where(account => account.UserId == userId)
+            .Where(account => account.Id == userId)
             .FirstOrDefaultAsync();
     }
 }
