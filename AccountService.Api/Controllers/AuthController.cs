@@ -1,6 +1,8 @@
 ﻿using AccountService.Business.DTOs;
 using AccountService.Business.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections;
 
 namespace AccountService.Api.Controllers
 {
@@ -9,8 +11,6 @@ namespace AccountService.Api.Controllers
     public class AuthController(IAuthService authService) : ControllerBase
     {
         private readonly IAuthService _authService = authService;
-
-       
 
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] SignUpDto formData)
