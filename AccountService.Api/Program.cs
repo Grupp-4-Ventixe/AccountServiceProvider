@@ -3,8 +3,10 @@ using AccountService.Business.Services;
 using AccountService.Data.Contexts;
 using AccountService.Data.Interfaces;
 using AccountService.Data.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,21 +18,38 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-
 builder.Services.AddScoped<IAccountService, AccountService.Business.Services.AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration["Jwt:Authority"];
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Authority"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+        };
+        options.RequireHttpsMetadata = true;
+    });
 
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
 app.MapOpenApi();
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.MapControllers();
 

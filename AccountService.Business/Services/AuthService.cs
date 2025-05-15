@@ -2,6 +2,7 @@
 using AccountService.Business.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
 
 namespace AccountService.Business.Services;
 
@@ -35,14 +36,33 @@ public class AuthService : IAuthService
 
         };
     }
-    public async Task<SignInResult> SignInAsync(SignInDto formData)
+    public async Task<string> SignInAsync(SignInDto formData)
     {
-        return await _signInManager.PasswordSignInAsync(
+        var result = await _signInManager.PasswordSignInAsync(
             formData.Email,
             formData.Password,
             formData.RememberMe,
             lockoutOnFailure: false
         );
+
+        if (!result.Succeeded)
+        {
+            throw new UnauthorizedAccessException("Invalid credentials.");
+        }
+
+        using var httpClient = new HttpClient();
+        var tokenResponse = await httpClient.PostAsJsonAsync("https://tokenservice.azurewebsites.net/api/token", new
+        {
+            Email = formData.Email
+        });
+
+        if (!tokenResponse.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to retrieve JWT token from the external service.");
+        }
+
+        return await tokenResponse.Content.ReadAsStringAsync();
+
     }
 
     public async Task LogoutAsync()

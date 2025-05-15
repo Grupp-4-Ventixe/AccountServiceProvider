@@ -3,6 +3,7 @@ using AccountService.Business.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
+using System.Linq.Expressions;
 
 namespace AccountService.Api.Controllers
 {
@@ -30,12 +31,19 @@ namespace AccountService.Api.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            var result = await _authService.SignInAsync(formData);
-            if (result.Succeeded)
-                return Ok(result);
-
-            return Unauthorized("Invalid credentials.");
+            try
+            {
+                var token = await _authService.SignInAsync(formData);
+                return Ok(new { Token = token });
+            } 
+            catch (UnauthorizedAccessException) 
+            {
+                return Unauthorized("Invalid credentials.");
+            }
+            catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }          
 
         }
     }
