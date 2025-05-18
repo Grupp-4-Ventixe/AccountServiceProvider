@@ -1,5 +1,6 @@
 ﻿using AccountService.Business.DTOs;
 using AccountService.Business.Interfaces;
+using AccountService.Data.Entities;
 using AccountService.Data.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
@@ -7,38 +8,22 @@ namespace AccountService.Business.Services;
 
 public class AccountService : IAccountService
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AccountEntity> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IAccountRepository _accountRepository;
 
 
-    public AccountService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IAccountRepository accountRepository)
+    public AccountService(UserManager<AccountEntity> userManager, RoleManager<IdentityRole> roleManager, IAccountRepository accountRepository)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _accountRepository = accountRepository;
     }
 
-    public async Task<AccountDto> GetAccountByIdAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        if (user == null)
-            return null;
-
-        var account = await _accountRepository.GetUserByIdAsync(userId);
-
-        return new AccountDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            UserName = user.UserName
-        };
-    }
-
+    //CREATE
     public async Task<CreateUserResult> CreateAccountAsync(CreateUserDto formData)
     {
-        var user = new IdentityUser
+        var user = new AccountEntity
         {
             UserName = formData.Email,
             Email = formData.Email
@@ -83,6 +68,40 @@ public class AccountService : IAccountService
         };
 
     }
+
+    //READ
+
+    public async Task<AccountDto> GetAccountByIdAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+            return null;
+
+        var account = await _accountRepository.GetUserByIdAsync(userId);
+
+        return new AccountDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            UserName = user.UserName
+        };
+    }
+
+    public async Task<IEnumerable<AccountDto>> GetAllAccountsAsync()
+    {
+        var users = await _accountRepository.GetAllAsync();
+
+        return users.Select(user => new AccountDto
+        {
+            Id = user.Id, 
+            Email = user.Email,
+            UserName = user.UserName
+        });
+    }
+
+    //UPDATE
+    //DELETE
 
 
 

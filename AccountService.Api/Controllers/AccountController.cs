@@ -12,8 +12,9 @@ public class AccountController(IAccountService accountService) : ControllerBase
    
     private readonly IAccountService _accountService = accountService;
 
+
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+   
     public async Task<IActionResult> CreateAccount([FromBody] CreateUserDto formData)
     {
         if (!ModelState.IsValid)
@@ -41,5 +42,12 @@ public class AccountController(IAccountService accountService) : ControllerBase
         }
 
         return Ok(account);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllAccounts()
+    {
+        var accounts = await _accountService.GetAllAccountsAsync();
+        return Ok(accounts);
     }
 }

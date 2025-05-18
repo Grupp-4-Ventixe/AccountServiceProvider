@@ -29,6 +29,21 @@ public abstract class BaseRepository<T>(AccountDbContext context) : IBaseReposit
         }
     }
 
+    public virtual async Task<IEnumerable<T>> GetAllAsync()
+    {
+        try
+        {
+            var entities = await _dbSet.ToListAsync();
+            return entities;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return [];
+        }
+    }
+
     public virtual async Task<T?> GetAsync(Expression<Func<T, bool>> expression)
     {
         try
